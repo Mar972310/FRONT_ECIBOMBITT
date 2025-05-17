@@ -92,13 +92,33 @@ jobs:
                 BACKEND_URL=${{ secrets.BACKEND_URL }} \
                 WEBSOCKET_URL=${{ secrets.WEBSOCKET_URL }}
 
-#  sonarcloud:
-#    needs: deploy
-#    uses: ZayraGS1403/central-pipelines/.github/workflows/sonarcloud-analysis.yml@v0.1.1
-#    with:
-#      node-version: '20'
-#      branch-name: ${{ github.ref_name }}
-#    secrets:
-#      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
-#      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+  sonarcloud:
+    needs: build  # puedes dejar "deploy" si prefieres que sea después del despliegue
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey= Mar972310_FRONT_ECIBOMBITT
+            -Dsonar.organization=mar972310
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/*.test.js,**/*.test.jsx,**/__tests__/**,**/*.spec.js,**/*.spec.jsx
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.test.js,**/*.test.jsx,**/*.spec.js,**/*.spec.jsx
+            -Dsonar.verbose=false
